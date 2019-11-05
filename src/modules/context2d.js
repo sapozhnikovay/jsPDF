@@ -1044,13 +1044,27 @@
             return;
         }
 
+        // custom: storing origX/origY for further link by bound detection (custom html2canvas linkCallback)
+        var origX = x;
+        var origY = y;
+
         y = getBaseline.call(this, y);
         var degs = rad2deg(this.ctx.transform.rotation);
 
         // We only use X axis as scale hint 
         var scale = this.ctx.transform.scaleX;
 
-        putText.call(this, { text: text, x: x, y: y, scale: scale, angle: degs, align: this.textAlign, maxWidth: maxWidth });
+        putText.call(this, {
+            text: text,
+            x: x,
+            y: y,
+            scale: scale,
+            angle: degs,
+            align: this.textAlign,
+            maxWidth: maxWidth,
+            origX: origX,
+            origY: origY
+        });
     };
 
     /**
@@ -1316,26 +1330,48 @@
             }
         }
 
+        // custom: working with arbitrary start page fix
+        var startPage = this.pdf.internal.getCurrentPageInfo().pageNumber;
+        pages = pages.map(function (pageNum) {
+            return pageNum + startPage - 1;
+        });
+
+        // custom: adding missing pages
+        for (var j = 0; j < pages.length; j++) {
+            while (this.pdf.internal.getNumberOfPages() < pages[j]) {
+                console.debug('Context2D::drawImage - adding page', pages[j]);
+                addPage.call(this);
+            }
+        }
+
         pages.sort();
 
         var clipPath;
         if (this.autoPaging) {
             var min = pages[0];
             var max = pages[pages.length - 1];
+
+            var pageWrapY = this.pageWrapY || this.pdf.internal.pageSize.height;
             for (var i = min; i < (max + 1); i++) {
                 this.pdf.setPage(i);
+
+                // custom: pageWrapY & topOffset based offset calculation
+                var yOffset = i === min ? this.posY : this.posY - (i - min) * pageWrapY + this.topOffset;
 
                 if (this.ctx.clip_path.length !== 0) {
                     var tmpPaths = this.path;
                     clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
-                    this.path = pathPositionRedo(clipPath, this.posX, -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY);
+                    this.path = pathPositionRedo(clipPath, this.posX, yOffset);
                     drawPaths.call(this, 'fill', true);
                     this.path = tmpPaths;
                 }
                 var tmpRect = JSON.parse(JSON.stringify(xRect));
-                tmpRect = pathPositionRedo([tmpRect], this.posX, -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY)[0];
+                tmpRect = pathPositionRedo([tmpRect], this.posX, yOffset)[0];
                 this.pdf.addImage(img, 'JPEG', tmpRect.x, tmpRect.y, tmpRect.w, tmpRect.h, null, null, angle);
             }
+
+            // custom: restore initial page for multi-page case
+            this.pdf.setPage(startPage);
         } else {
             this.pdf.addImage(img, 'JPEG', xRect.x, xRect.y, xRect.w, xRect.h, null, null, angle);
         }
@@ -1344,7 +1380,8 @@
     var getPagesByPath = function (path, pageWrapX, pageWrapY) {
         var result = [];
         pageWrapX = pageWrapX || this.pdf.internal.pageSize.width;
-        pageWrapY = pageWrapY || this.pdf.internal.pageSize.height;
+        // custom: pageWrapY
+        pageWrapY = pageWrapY || this.pageWrapY || this.pdf.internal.pageSize.height;
 
         switch (path.type) {
             default:
@@ -1394,6 +1431,11 @@
         this.lineCap = lineCap;
         this.lineWidth = lineWidth;
         this.lineJoin = lineJoin;
+
+        // custom: didDrawPage callback
+        if (this.didDrawPage) {
+            this.didDrawPage();
+        }
     };
 
     var pathPositionRedo = function (paths, x, y) {
@@ -1441,8 +1483,15 @@
             }
         }
 
+        // custom: working with arbitrary start page fix
+        var startPage = this.pdf.internal.getCurrentPageInfo().pageNumber;
+        pages = pages.map(function (pageNum) {
+            return pageNum + startPage - 1;
+        });
+
         for (var j = 0; j < pages.length; j++) {
             while (this.pdf.internal.getNumberOfPages() < pages[j]) {
+                console.debug('Context2D::pathPreProcess - adding page', pages[j]);
                 addPage.call(this);
             }
         }
@@ -1451,8 +1500,12 @@
         if (this.autoPaging) {
             var min = pages[0];
             var max = pages[pages.length - 1];
+            var pageWrapY = this.pageWrapY || this.pdf.internal.pageSize.height;
             for (var k = min; k < (max + 1); k++) {
                 this.pdf.setPage(k);
+
+                // custom: pageWrapY & topOffset based offset calculation
+                var yOffset = k === min ? this.posY : this.posY - (k - min) * pageWrapY + this.topOffset;
 
                 this.fillStyle = fillStyle;
                 this.strokeStyle = strokeStyle;
@@ -1463,16 +1516,19 @@
                 if (this.ctx.clip_path.length !== 0) {
                     var tmpPaths = this.path;
                     clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
-                    this.path = pathPositionRedo(clipPath, this.posX, -1 * this.pdf.internal.pageSize.height * (k - 1) + this.posY);
+                    this.path = pathPositionRedo(clipPath, this.posX, yOffset);
                     drawPaths.call(this, rule, true);
                     this.path = tmpPaths;
                 }
                 tmpPath = JSON.parse(JSON.stringify(origPath));
-                this.path = pathPositionRedo(tmpPath, this.posX, -1 * this.pdf.internal.pageSize.height * (k - 1) + this.posY);
+                this.path = pathPositionRedo(tmpPath, this.posX, yOffset);
                 if (isClip === false || k === 0) {
                     drawPaths.call(this, rule, isClip);
                 }
             }
+
+            // custom: restore initial page for multi-page case
+            this.pdf.setPage(startPage);
         } else {
             drawPaths.call(this, rule, isClip);
         }
@@ -1749,24 +1805,42 @@
             }
         }
 
+        // custom: working with arbitrary start page fix
+        var startPage = this.pdf.internal.getCurrentPageInfo().pageNumber;
+        pages = pages.map(function (pageNum) {
+            return pageNum + startPage - 1;
+        });
+
+        // custom: adding missing pages
+        for (var j = 0; j < pages.length; j++) {
+            while (this.pdf.internal.getNumberOfPages() < pages[j]) {
+                console.debug('Context2D::putText - adding page', pages[j]);
+                addPage.call(this);
+            }
+        }
+
         pages.sort();
 
         var clipPath, oldSize;
         if (this.autoPaging === true) {
             var min = pages[0];
             var max = pages[pages.length - 1];
+            var pageWrapY = this.pageWrapY || this.pdf.internal.pageSize.height;
             for (var i = min; i < (max + 1); i++) {
                 this.pdf.setPage(i);
+
+                // custom: pageWrapY & topOffset based offset calculation
+                var yOffset = i === min ? this.posY : this.posY - (i - 1) * pageWrapY + this.topOffset;
 
                 if (this.ctx.clip_path.length !== 0) {
                     var tmpPaths = this.path;
                     clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
-                    this.path = pathPositionRedo(clipPath, this.posX, -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY);
+                    this.path = pathPositionRedo(clipPath, this.posX, yOffset);
                     drawPaths.call(this, 'fill', true);
                     this.path = tmpPaths;
                 }
                 var tmpRect = JSON.parse(JSON.stringify(textRect));
-                tmpRect = pathPositionRedo([tmpRect], this.posX, -1 * this.pdf.internal.pageSize.height * (i - 1) + this.posY)[0];
+                tmpRect = pathPositionRedo([tmpRect], this.posX, yOffset)[0];
 
                 if (options.scale >= 0.01) {
                     oldSize = this.pdf.internal.getFontSize();
@@ -1774,10 +1848,27 @@
                 }
                 this.pdf.text(options.text, tmpRect.x, tmpRect.y, { angle: options.angle, align: textAlign, renderingMode: options.renderingMode, maxWidth: options.maxWidth });
 
+                // custom: adding links (linkMeta comes from custom html2canvas linkCallback)
+                if (this.linkMeta) {
+                    var x1 = this.linkMeta.bounds.left;
+                    var x2 = x1 + this.linkMeta.bounds.width;
+                    var y1 = this.linkMeta.bounds.top;
+                    var y2 = y1 + this.linkMeta.bounds.height;
+
+                    if (options.origX >= x1 && options.origX <= x2 && options.origY >= y1 && options.origY <= y2) {
+                        this.pdf.link(tmpRect.x, tmpRect.y - tmpRect.h, tmpRect.w, tmpRect.h, {
+                            url: this.linkMeta.href
+                        });
+                    }
+                }
+
                 if (options.scale >= 0.01) {
                     this.pdf.setFontSize(oldSize);
                 }
             }
+
+            // custom: restore initial page for multi-page case
+            this.pdf.setPage(startPage);
         } else {
             if (options.scale >= 0.01) {
                 oldSize = this.pdf.internal.getFontSize();
