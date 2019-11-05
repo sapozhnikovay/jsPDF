@@ -315,6 +315,15 @@
 		pdf.context2d.autoPaging = true;
 		pdf.context2d.posX = this.opt.x;
 		pdf.context2d.posY = this.opt.y;
+
+		// custom: new callbacks and params
+		pdf.context2d.didDrawPage = this.opt.didDrawPage;
+		pdf.context2d.topOffset = this.opt.topOffset || 0;
+		pdf.context2d.bottomOffset = this.opt.bottomOffset || 0;
+		pdf.context2d.pageWrapY = pdf.internal.pageSize.height - pdf.context2d.bottomOffset;
+		options.linkCallback = (href, bounds) => {
+		  pdf.context2d.linkMeta = {href, bounds};
+		};
 		
 		options.windowHeight = options.windowHeight || 0;
 		options.windowHeight = (options.windowHeight == 0) ? Math.max(this.prop.container.clientHeight, this.prop.container.scrollHeight, this.prop.container.offsetHeight) : options.windowHeight;
