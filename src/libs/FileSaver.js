@@ -174,7 +174,7 @@
   });
   _global.saveAs = saveAs.saveAs = saveAs;
 
-  if (typeof module !== 'undefined') {
-    module.exports = saveAs;
-  }
+  // if (typeof module !== 'undefined') {
+  //   module.exports = saveAs;
+  // }
 });
