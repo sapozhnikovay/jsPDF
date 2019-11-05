@@ -449,7 +449,7 @@ var jsPDF = (function (global) {
     };
 
     var getArrayBuffer = API.__private__.getArrayBuffer = function (data) {
-      return (new Uint8Array(data.split(''))).buffer;
+      return new TextEncoder().encode(data).buffer;
     };
 
     var standardFonts = [
