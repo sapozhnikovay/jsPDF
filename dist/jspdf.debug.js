@@ -5,8 +5,8 @@
 
   /** @license
    * jsPDF - PDF Document creation from JavaScript
-   * Version 1.5.3 Built on 2019-11-05T19:28:01.749Z
-   *                      CommitID f14bac4518
+   * Version 1.5.3 Built on 2019-11-06T17:52:47.429Z
+   *                      CommitID 3f6743c03c
    *
    * Copyright (c) 2010-2016 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
    *               2010 Aaron Spike, https://github.com/acspike
@@ -10615,8 +10615,7 @@
         }
       }
 
-      pages.sort();
-      var clipPath;
+      pages.sort(); // var clipPath;
 
       if (this.autoPaging) {
         var min = pages[0];
@@ -10624,17 +10623,36 @@
         var pageWrapY = this.pageWrapY || this.pdf.internal.pageSize.height;
 
         for (var i = min; i < max + 1; i++) {
-          this.pdf.setPage(i); // custom: pageWrapY & topOffset based offset calculation
+          this.pdf.setPage(i); // custom: clip based on topOffset/bottomOffset
 
-          var yOffset = i === startPage ? this.posY : this.posY - (i - startPage) * pageWrapY + this.topOffset;
+          var origPath = this.path;
+          this.path = [];
+          this.autoPaging = false; // as topOffset/bottomOffset clip region should not be recalculated
 
-          if (this.ctx.clip_path.length !== 0) {
-            var tmpPaths = this.path;
-            clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
-            this.path = pathPositionRedo(clipPath, this.posX, yOffset);
-            drawPaths.call(this, 'fill', true);
-            this.path = tmpPaths;
-          }
+          this.strokeStyle = 'rgba(0,0,0,0)';
+          this.rect(0, this.topOffset, this.pdf.internal.pageSize.width, this.pageWrapY - this.topOffset);
+          this.stroke();
+          this.clip();
+          this.autoPaging = true;
+          this.path = origPath; // custom: pageWrapY & topOffset based offset calculation
+
+          var yOffset;
+
+          if (i - startPage === 0) {
+            yOffset = this.posY;
+          } else if (i - startPage === 1) {
+            yOffset = this.posY - this.pageWrapY + this.topOffset;
+          } else if (i - startPage > 1) {
+            yOffset = this.posY - this.pageWrapY - this.pageWrapHeight * (i - startPage - 1) + this.topOffset;
+          } // custom: ignoring relative clip as unused and in conflict with topOffset/bottomOffset clip
+          // if (this.ctx.clip_path.length !== 0) {
+          //   var tmpPaths = this.path;
+          //   clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
+          //   this.path = pathPositionRedo(clipPath, this.posX, yOffset);
+          //   drawPaths.call(this, 'fill', true);
+          //   this.path = tmpPaths;
+          // }
+
 
           var tmpRect = JSON.parse(JSON.stringify(xRect));
           tmpRect = pathPositionRedo([tmpRect], this.posX, yOffset)[0];
@@ -10650,20 +10668,21 @@
 
     var getPagesByPath = function getPagesByPath(path, pageWrapX, pageWrapY) {
       var result = [];
-      pageWrapX = pageWrapX || this.pdf.internal.pageSize.width; // custom: pageWrapY
+      pageWrapX = pageWrapX || this.pdf.internal.pageSize.width; // custom: include topOffset/pageWrapHeight/pageWrapY into calculations
 
-      pageWrapY = pageWrapY || this.pageWrapY || this.pdf.internal.pageSize.height;
+      pageWrapY = pageWrapY || this.pageWrapHeight || this.pageWrapY || this.pdf.internal.pageSize.height;
+      var posY = this.posY - (this.topOffset || 0);
 
       switch (path.type) {
         default:
         case 'mt':
         case 'lt':
-          result.push(Math.floor((path.y + this.posY) / pageWrapY) + 1);
+          result.push(Math.floor((path.y + posY) / pageWrapY) + 1);
           break;
 
         case 'arc':
-          result.push(Math.floor((path.y + this.posY - path.radius) / pageWrapY) + 1);
-          result.push(Math.floor((path.y + this.posY + path.radius) / pageWrapY) + 1);
+          result.push(Math.floor((path.y + posY - path.radius) / pageWrapY) + 1);
+          result.push(Math.floor((path.y + posY + path.radius) / pageWrapY) + 1);
           break;
 
         case 'qct':
@@ -10679,8 +10698,8 @@
           break;
 
         case 'rect':
-          result.push(Math.floor((path.y + this.posY) / pageWrapY) + 1);
-          result.push(Math.floor((path.y + path.h + this.posY) / pageWrapY) + 1);
+          result.push(Math.floor((path.y + posY) / pageWrapY) + 1);
+          result.push(Math.floor((path.y + path.h + posY) / pageWrapY) + 1);
       }
 
       for (var i = 0; i < result.length; i += 1) {
@@ -10746,35 +10765,34 @@
       var xPath = JSON.parse(JSON.stringify(this.path));
       var clipPath;
       var tmpPath;
-      var pages = [];
-
-      for (var i = 0; i < xPath.length; i++) {
-        if (typeof xPath[i].x !== "undefined") {
-          var page = getPagesByPath.call(this, xPath[i]);
-
-          for (var ii = 0; ii < page.length; ii += 1) {
-            if (pages.indexOf(page[ii]) === -1) {
-              pages.push(page[ii]);
-            }
-          }
-        }
-      } // custom: working with arbitrary start page fix
-
-
-      var startPage = this.pdf.internal.getCurrentPageInfo().pageNumber;
-      pages = pages.map(function (pageNum) {
-        return pageNum + startPage - 1;
-      });
-
-      for (var i = 0; i < pages.length; i++) {
-        while (this.pdf.internal.getNumberOfPages() < pages[i]) {
-          addPage.call(this);
-        }
-      }
-
-      pages.sort();
+      var pages = []; // custom: avoid adding extra pages for autoPaging mode
 
       if (this.autoPaging) {
+        for (var i = 0; i < xPath.length; i++) {
+          if (typeof xPath[i].x !== "undefined") {
+            var page = getPagesByPath.call(this, xPath[i]);
+
+            for (var ii = 0; ii < page.length; ii += 1) {
+              if (pages.indexOf(page[ii]) === -1) {
+                pages.push(page[ii]);
+              }
+            }
+          }
+        } // custom: working with arbitrary start page fix
+
+
+        var startPage = this.pdf.internal.getCurrentPageInfo().pageNumber;
+        pages = pages.map(function (pageNum) {
+          return pageNum + startPage - 1;
+        });
+
+        for (var i = 0; i < pages.length; i++) {
+          while (this.pdf.internal.getNumberOfPages() < pages[i]) {
+            addPage.call(this);
+          }
+        }
+
+        pages.sort();
         var min = pages[0];
         var max = pages[pages.length - 1];
         var pageWrapY = this.pageWrapY || this.pdf.internal.pageSize.height;
@@ -12300,6 +12318,7 @@
         pdf.context2d.topOffset = this.opt.topOffset || 0;
         pdf.context2d.bottomOffset = this.opt.bottomOffset || 0;
         pdf.context2d.pageWrapY = pdf.internal.pageSize.height - pdf.context2d.bottomOffset;
+        pdf.context2d.pageWrapHeight = pdf.context2d.pageWrapY - pdf.context2d.topOffset;
 
         options.linkCallback = function (href, bounds) {
           pdf.context2d.linkMeta = {
