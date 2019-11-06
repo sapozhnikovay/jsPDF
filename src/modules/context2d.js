@@ -1321,32 +1321,35 @@
         matrix = matrix.multiply(decomposedTransformationMatrix.scale);
         var mP = matrix.applyToPoint(new Point(width, height));
         var xRect = matrix.applyToRectangle(new Rectangle(x - (sx *clipFactorX), y - (sy*clipFactorY), swidth * factorX, sheight * factorY));
-        var pageArray = getPagesByPath.call(this, xRect);
-        var pages = [];
-        for (var ii = 0; ii < pageArray.length; ii += 1) {
-          if (pages.indexOf(pageArray[ii]) === -1) {
-            pages.push(pageArray[ii]);
-          }
-        }
 
-        // custom: working with arbitrary start page fix
-        var startPage = this.pdf.internal.getCurrentPageInfo().pageNumber;
-        pages = pages.map(function (pageNum) {
-            return pageNum + startPage - 1;
-        });
-
-        // custom: adding missing pages
-        for (var j = 0; j < pages.length; j++) {
-            while (this.pdf.internal.getNumberOfPages() < pages[j]) {
-                console.debug('Context2D::drawImage - adding page', pages[j]);
-                addPage.call(this);
-            }
-        }
-
-        pages.sort();
-
-        // var clipPath;
+        // custom: avoid adding extra pages for non-autoPaging mode as leads to incorrect initial page number (latest added)
         if (this.autoPaging) {
+          var pageArray = getPagesByPath.call(this, xRect);
+          var pages = [];
+
+          for (var ii = 0; ii < pageArray.length; ii += 1) {
+            if (pages.indexOf(pageArray[ii]) === -1) {
+              pages.push(pageArray[ii]);
+            }
+          }
+
+          // custom: working with arbitrary start page fix
+          var startPage = this.pdf.internal.getCurrentPageInfo().pageNumber;
+          pages = pages.map(function (pageNum) {
+              return pageNum + startPage - 1;
+          });
+
+          // custom: adding missing pages
+          for (var j = 0; j < pages.length; j++) {
+              while (this.pdf.internal.getNumberOfPages() < pages[j]) {
+                  console.debug('Context2D::drawImage - adding page', pages[j]);
+                  addPage.call(this);
+              }
+          }
+
+          pages.sort();
+          // var clipPath;
+
           var min = pages[0];
           var max = pages[pages.length -1];
           var pageWrapY = this.pageWrapY || this.pdf.internal.pageSize.height;
@@ -1486,13 +1489,14 @@
       var lineJoin = this.lineJoin;
 
       var origPath = JSON.parse(JSON.stringify(this.path));
-      var xPath = JSON.parse(JSON.stringify(this.path));
-      var clipPath;
-      var tmpPath;
-      var pages = [];
 
-      // custom: avoid adding extra pages for autoPaging mode
+      // custom: avoid adding extra pages for non-autoPaging mode as leads to incorrect initial page number (latest added)
       if (this.autoPaging) {
+          var xPath = JSON.parse(JSON.stringify(this.path));
+          var clipPath;
+          var tmpPath;
+          var pages = [];
+
           for (var i = 0; i < xPath.length; i++) {
             if (typeof xPath[i].x !== "undefined") {
               var page = getPagesByPath.call(this, xPath[i]);
@@ -1828,32 +1832,36 @@
         var textDimensions = this.pdf.getTextDimensions(options.text);
         var textRect = this.ctx.transform.applyToRectangle(new Rectangle(options.x, options.y, textDimensions.w, textDimensions.h));
         var textXRect = matrix.applyToRectangle(new Rectangle(options.x, options.y - textDimensions.h, textDimensions.w, textDimensions.h));
-        var pageArray = getPagesByPath.call(this, textXRect);
-        var pages = [];
-        for (var ii = 0; ii < pageArray.length; ii += 1) {
-          if (pages.indexOf(pageArray[ii]) === -1) {
-            pages.push(pageArray[ii]);
-          }
-        }
 
-        // custom: working with arbitrary start page fix
-        var startPage = this.pdf.internal.getCurrentPageInfo().pageNumber;
-        pages = pages.map(function (pageNum) {
-            return pageNum + startPage - 1;
-        });
+        // custom: avoid adding extra pages for non-autoPaging mode as leads to incorrect initial page number (latest added)
+        if (this.autoPaging) {
+          var pageArray = getPagesByPath.call(this, textXRect);
+          var pages = [];
 
-        // custom: adding missing pages
-        for (var j = 0; j < pages.length; j++) {
-            while (this.pdf.internal.getNumberOfPages() < pages[j]) {
-                console.debug('Context2D::putText - adding page', pages[j]);
-                addPage.call(this);
+          for (var ii = 0; ii < pageArray.length; ii += 1) {
+            if (pages.indexOf(pageArray[ii]) === -1) {
+              pages.push(pageArray[ii]);
             }
-        }
+          }
 
-        pages.sort();
+          // custom: working with arbitrary start page fix
+          var startPage = this.pdf.internal.getCurrentPageInfo().pageNumber;
+          pages = pages.map(function (pageNum) {
+              return pageNum + startPage - 1;
+          });
 
-        var clipPath;
-        if (this.autoPaging === true) {
+          // custom: adding missing pages
+          for (var j = 0; j < pages.length; j++) {
+              while (this.pdf.internal.getNumberOfPages() < pages[j]) {
+                  console.debug('Context2D::putText - adding page', pages[j]);
+                  addPage.call(this);
+              }
+          }
+
+          pages.sort();
+
+          var clipPath;
+
           var min = pages[0];
           var max = pages[pages.length -1];
           var pageWrapY = this.pageWrapY || this.pdf.internal.pageSize.height;
