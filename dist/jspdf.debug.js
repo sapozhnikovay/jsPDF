@@ -5,8 +5,8 @@
 
   /** @license
    * jsPDF - PDF Document creation from JavaScript
-   * Version 1.5.3 Built on 2019-11-06T18:07:03.284Z
-   *                      CommitID b2697b8d14
+   * Version 1.5.3 Built on 2019-11-06T20:05:26.598Z
+   *                      CommitID beb0e387e1
    *
    * Copyright (c) 2010-2016 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
    *               2010 Aaron Spike, https://github.com/acspike
@@ -10728,7 +10728,11 @@
       this.lineJoin = lineJoin; // custom: didDrawPage callback
 
       if (this.didDrawPage) {
+        var oldSize = this.pdf.internal.getFontSize();
+        var oldColor = this.pdf.internal.getTextColor();
         this.didDrawPage();
+        this.pdf.setFontSize(oldSize);
+        this.pdf.setTextColor(oldColor);
       }
     };
 
@@ -11148,24 +11152,42 @@
           }
         }
 
-        pages.sort();
-        var clipPath;
+        pages.sort(); // var clipPath;
+
         var min = pages[0];
         var max = pages[pages.length - 1];
         var pageWrapY = this.pageWrapY || this.pdf.internal.pageSize.height;
 
         for (var i = min; i < max + 1; i++) {
-          this.pdf.setPage(i); // custom: pageWrapY & topOffset based offset calculation
+          this.pdf.setPage(i);
+          var origPath = this.path;
+          this.path = [];
+          this.autoPaging = false; // as topOffset/bottomOffset clip region should not be recalculated
 
-          var yOffset = i === startPage ? this.posY : this.posY - (i - startPage) * pageWrapY + this.topOffset;
+          this.strokeStyle = 'rgba(0,0,0,0)';
+          this.rect(0, this.topOffset, this.pdf.internal.pageSize.width, this.pageWrapY - this.topOffset);
+          this.stroke();
+          this.clip();
+          this.autoPaging = true;
+          this.path = origPath; // custom: pageWrapY & topOffset based offset calculation
 
-          if (this.ctx.clip_path.length !== 0) {
-            var tmpPaths = this.path;
-            clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
-            this.path = pathPositionRedo(clipPath, this.posX, yOffset);
-            drawPaths.call(this, 'fill', true);
-            this.path = tmpPaths;
-          }
+          var yOffset;
+
+          if (i - startPage === 0) {
+            yOffset = this.posY;
+          } else if (i - startPage === 1) {
+            yOffset = this.posY - this.pageWrapY + this.topOffset;
+          } else if (i - startPage > 1) {
+            yOffset = this.posY - this.pageWrapY - this.pageWrapHeight * (i - startPage - 1) + this.topOffset;
+          } // custom: ignoring relative clip as unused and in conflict with topOffset/bottomOffset clip
+          // if (this.ctx.clip_path.length !== 0) {
+          //     var tmpPaths = this.path;
+          //     clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
+          //     this.path = pathPositionRedo(clipPath, this.posX, yOffset);
+          //     drawPaths.call(this, 'fill', true);
+          //     this.path = tmpPaths;
+          // }
+
 
           var tmpRect = JSON.parse(JSON.stringify(textRect));
           tmpRect = pathPositionRedo([tmpRect], this.posX, yOffset)[0];

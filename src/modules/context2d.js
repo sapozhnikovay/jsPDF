@@ -1864,24 +1864,42 @@
 
           pages.sort();
 
-          var clipPath;
-
+          // var clipPath;
           var min = pages[0];
           var max = pages[pages.length -1];
           var pageWrapY = this.pageWrapY || this.pdf.internal.pageSize.height;
           for (var i = min; i < (max+1); i++) {
             this.pdf.setPage(i);
 
-            // custom: pageWrapY & topOffset based offset calculation
-            var yOffset = i === startPage ? this.posY : this.posY - (i - startPage) * pageWrapY + this.topOffset;
+            var origPath = this.path;
+            this.path = [];
+            this.autoPaging = false; // as topOffset/bottomOffset clip region should not be recalculated
+            this.strokeStyle = 'rgba(0,0,0,0)';
+            this.rect(0, this.topOffset, this.pdf.internal.pageSize.width, this.pageWrapY - this.topOffset);
+            this.stroke();
+            this.clip();
+            this.autoPaging = true;
+            this.path = origPath;
 
-            if (this.ctx.clip_path.length !== 0) {
-                var tmpPaths = this.path;
-                clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
-                this.path = pathPositionRedo(clipPath, this.posX, yOffset);
-                drawPaths.call(this, 'fill', true);
-                this.path = tmpPaths;
+            // custom: pageWrapY & topOffset based offset calculation
+            var yOffset;
+            if (i - startPage === 0) {
+              yOffset = this.posY;
+            } else if (i - startPage === 1) {
+              yOffset = this.posY - this.pageWrapY + this.topOffset;
+            } else if (i - startPage > 1) {
+              yOffset = this.posY - this.pageWrapY - this.pageWrapHeight * (i - startPage - 1) + this.topOffset;
             }
+
+            // custom: ignoring relative clip as unused and in conflict with topOffset/bottomOffset clip
+            // if (this.ctx.clip_path.length !== 0) {
+            //     var tmpPaths = this.path;
+            //     clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
+            //     this.path = pathPositionRedo(clipPath, this.posX, yOffset);
+            //     drawPaths.call(this, 'fill', true);
+            //     this.path = tmpPaths;
+            // }
+
             var tmpRect = JSON.parse(JSON.stringify(textRect));
             tmpRect = pathPositionRedo([tmpRect], this.posX, yOffset)[0];
           
