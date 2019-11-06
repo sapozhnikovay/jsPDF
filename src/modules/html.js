@@ -321,6 +321,7 @@
 		pdf.context2d.topOffset = this.opt.topOffset || 0;
 		pdf.context2d.bottomOffset = this.opt.bottomOffset || 0;
 		pdf.context2d.pageWrapY = pdf.internal.pageSize.height - pdf.context2d.bottomOffset;
+	    pdf.context2d.pageWrapHeight = pdf.context2d.pageWrapY - pdf.context2d.topOffset;
 		options.linkCallback = (href, bounds) => {
 		  pdf.context2d.linkMeta = {href, bounds};
 		};

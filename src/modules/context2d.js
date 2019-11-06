@@ -1378,18 +1378,19 @@
     var getPagesByPath = function (path, pageWrapX, pageWrapY) {
         var result = [];
         pageWrapX = pageWrapX || this.pdf.internal.pageSize.width;
-        // custom: pageWrapY
-        pageWrapY = pageWrapY || this.pageWrapY || this.pdf.internal.pageSize.height;
+        // custom: include topOffset/pageWrapHeight/pageWrapY into calculations
+        pageWrapY = pageWrapY || this.pageWrapHeight || this.pageWrapY || this.pdf.internal.pageSize.height;
+        var posY = this.posY - (this.topOffset || 0);
 
         switch (path.type) {
             default:
             case 'mt':
             case 'lt':
-                result.push(Math.floor((path.y + this.posY) / pageWrapY) + 1);
+                result.push(Math.floor((path.y + posY) / pageWrapY) + 1);
                 break;
             case 'arc':
-                result.push(Math.floor(((path.y + this.posY) - path.radius) / pageWrapY) + 1);
-                result.push(Math.floor(((path.y + this.posY) + path.radius) / pageWrapY) + 1);
+                result.push(Math.floor(((path.y + posY) - path.radius) / pageWrapY) + 1);
+                result.push(Math.floor(((path.y + posY) + path.radius) / pageWrapY) + 1);
                 break;
             case 'qct':
                 var rectOfQuadraticCurve = getQuadraticCurveBoundary(this.ctx.lastPoint.x,this.ctx.lastPoint.y, path.x1, path.y1, path.x, path.y);
@@ -1402,8 +1403,8 @@
                 result.push(Math.floor((rectOfBezierCurve.y + rectOfBezierCurve.h) / pageWrapY) + 1);
                 break;
             case 'rect':
-                result.push(Math.floor((path.y + this.posY) / pageWrapY) + 1);
-                result.push(Math.floor((path.y + path.h + this.posY) / pageWrapY) + 1);
+                result.push(Math.floor((path.y + posY) / pageWrapY) + 1);
+                result.push(Math.floor((path.y + path.h + posY) / pageWrapY) + 1);
 
         }
 
