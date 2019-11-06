@@ -1456,7 +1456,11 @@
 
         // custom: didDrawPage callback
         if (this.didDrawPage) {
+            var oldSize = this.pdf.internal.getFontSize();
+            var oldColor = this.pdf.internal.getTextColor();
             this.didDrawPage();
+            this.pdf.setFontSize(oldSize);
+            this.pdf.setTextColor(oldColor);
         }
     }
 
