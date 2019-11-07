@@ -1851,16 +1851,8 @@
           // custom: working with arbitrary start page fix
           var startPage = this.pdf.internal.getCurrentPageInfo().pageNumber;
           pages = pages.map(function (pageNum) {
-              return pageNum + startPage - 1;
+            return pageNum + startPage - 1;
           });
-
-          // custom: adding missing pages
-          for (var j = 0; j < pages.length; j++) {
-              while (this.pdf.internal.getNumberOfPages() < pages[j]) {
-                  console.debug('Context2D::putText - adding page', pages[j]);
-                  addPage.call(this);
-              }
-          }
 
           pages.sort();
 
@@ -1869,17 +1861,14 @@
           var max = pages[pages.length -1];
           var pageWrapY = this.pageWrapY || this.pdf.internal.pageSize.height;
           for (var i = min; i < (max+1); i++) {
-            this.pdf.setPage(i);
 
-            var origPath = this.path;
-            this.path = [];
-            this.autoPaging = false; // as topOffset/bottomOffset clip region should not be recalculated
-            this.strokeStyle = 'rgba(0,0,0,0)';
-            this.rect(0, this.topOffset, this.pdf.internal.pageSize.width, this.pageWrapY - this.topOffset);
-            this.stroke();
-            this.clip();
-            this.autoPaging = true;
-            this.path = origPath;
+            // custom: adding missing pages
+            while (this.pdf.internal.getNumberOfPages() < i) {
+              console.debug('Context2D::putText - adding page', i);
+              addPage.call(this);
+            }
+
+            this.pdf.setPage(i);
 
             // custom: pageWrapY & topOffset based offset calculation
             var yOffset;
@@ -1902,7 +1891,24 @@
 
             var tmpRect = JSON.parse(JSON.stringify(textRect));
             tmpRect = pathPositionRedo([tmpRect], this.posX, yOffset)[0];
-          
+
+            // saving clip state
+            this.pdf.internal.out('q');
+
+            // custom: clip based on topOffset/bottomOffset
+            var origPath = this.path;
+            var origClipPath = this.ctx.clip_path;
+            this.path = [];
+            this.autoPaging = false; // as topOffset/bottomOffset clip region should not be recalculated
+            this.strokeStyle = 'rgba(0,0,0,0)';
+            // auto-extend clip area at the bottom to accommodate full text line (to avoid text line split across pages)
+            this.rect(0, this.topOffset, this.pdf.internal.pageSize.width, Math.max(this.pageWrapY, tmpRect.y + tmpRect.h) - this.topOffset);
+            this.stroke();
+            this.clip();
+            this.autoPaging = true;
+            this.path = origPath;
+            this.clip_path = origClipPath;// custom: pageWrapY & topOffset based offset calculation
+
             if (options.scale >= 0.01) {
               var oldSize = this.pdf.internal.getFontSize();
               this.pdf.setFontSize(oldSize * options.scale);
@@ -1911,23 +1917,30 @@
 
             // custom: adding links (linkMeta comes from custom html2canvas linkCallback)
             if (this.linkMeta) {
-                var x1 = this.linkMeta.bounds.left;
-                var x2 = x1 + this.linkMeta.bounds.width;
-                var y1 = this.linkMeta.bounds.top;
-                var y2 = y1 + this.linkMeta.bounds.height;
+              var x1 = this.linkMeta.bounds.left;
+              var x2 = x1 + this.linkMeta.bounds.width;
+              var y1 = this.linkMeta.bounds.top;
+              var y2 = y1 + this.linkMeta.bounds.height;
 
-                if (options.origX >= x1 && options.origX <= x2 && options.origY >= y1 && options.origY <= y2) {
-                    this.pdf.link(tmpRect.x, tmpRect.y - tmpRect.h, tmpRect.w, tmpRect.h, {
-                        url: this.linkMeta.href
-                    });
-                }
+              if (options.origX >= x1 && options.origX <= x2 && options.origY >= y1 && options.origY <= y2) {
+                this.pdf.link(tmpRect.x, tmpRect.y - tmpRect.h, tmpRect.w, tmpRect.h, {
+                  url: this.linkMeta.href
+                });
+              }
             }
 
             if (options.scale >= 0.01) {
               this.pdf.setFontSize(oldSize);
             }
-          }
 
+            // custom: restore clip state
+            this.pdf.internal.out('Q');
+
+            // custom:  ignoring second page if clip rect was extended and second part of split text line is redundant
+            if (this.pageWrapY < tmpRect.y + tmpRect.h && max - min === 1) {
+               break;
+            }
+          }
           // custom: restore initial page for multi-page case
           this.pdf.setPage(startPage);
         } else {

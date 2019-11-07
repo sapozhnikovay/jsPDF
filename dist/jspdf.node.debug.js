@@ -2,8 +2,8 @@
 
 /** @license
  * jsPDF - PDF Document creation from JavaScript
- * Version 1.5.3 Built on 2019-11-06T20:05:33.834Z
- *                      CommitID beb0e387e1
+ * Version 1.5.3 Built on 2019-11-07T09:02:39.133Z
+ *                      CommitID f54d3ae28f
  *
  * Copyright (c) 2010-2016 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
  *               2010 Aaron Spike, https://github.com/acspike
@@ -10829,15 +10829,7 @@ var jsPDF = function (global) {
       var startPage = this.pdf.internal.getCurrentPageInfo().pageNumber;
       pages = pages.map(function (pageNum) {
         return pageNum + startPage - 1;
-      }); // custom: adding missing pages
-
-      for (var j = 0; j < pages.length; j++) {
-        while (this.pdf.internal.getNumberOfPages() < pages[j]) {
-          console.debug('Context2D::putText - adding page', pages[j]);
-          addPage.call(this);
-        }
-      }
-
+      });
       pages.sort(); // var clipPath;
 
       var min = pages[0];
@@ -10845,17 +10837,13 @@ var jsPDF = function (global) {
       var pageWrapY = this.pageWrapY || this.pdf.internal.pageSize.height;
 
       for (var i = min; i < max + 1; i++) {
-        this.pdf.setPage(i);
-        var origPath = this.path;
-        this.path = [];
-        this.autoPaging = false; // as topOffset/bottomOffset clip region should not be recalculated
+        // custom: adding missing pages
+        while (this.pdf.internal.getNumberOfPages() < i) {
+          console.debug('Context2D::putText - adding page', i);
+          addPage.call(this);
+        }
 
-        this.strokeStyle = 'rgba(0,0,0,0)';
-        this.rect(0, this.topOffset, this.pdf.internal.pageSize.width, this.pageWrapY - this.topOffset);
-        this.stroke();
-        this.clip();
-        this.autoPaging = true;
-        this.path = origPath; // custom: pageWrapY & topOffset based offset calculation
+        this.pdf.setPage(i); // custom: pageWrapY & topOffset based offset calculation
 
         var yOffset;
 
@@ -10876,7 +10864,23 @@ var jsPDF = function (global) {
 
 
         var tmpRect = JSON.parse(JSON.stringify(textRect));
-        tmpRect = pathPositionRedo([tmpRect], this.posX, yOffset)[0];
+        tmpRect = pathPositionRedo([tmpRect], this.posX, yOffset)[0]; // saving clip state
+
+        this.pdf.internal.out('q'); // custom: clip based on topOffset/bottomOffset
+
+        var origPath = this.path;
+        var origClipPath = this.ctx.clip_path;
+        this.path = [];
+        this.autoPaging = false; // as topOffset/bottomOffset clip region should not be recalculated
+
+        this.strokeStyle = 'rgba(0,0,0,0)'; // auto-extend clip area at the bottom to accommodate full text line (to avoid text line split across pages)
+
+        this.rect(0, this.topOffset, this.pdf.internal.pageSize.width, Math.max(this.pageWrapY, tmpRect.y + tmpRect.h) - this.topOffset);
+        this.stroke();
+        this.clip();
+        this.autoPaging = true;
+        this.path = origPath;
+        this.clip_path = origClipPath; // custom: pageWrapY & topOffset based offset calculation
 
         if (options.scale >= 0.01) {
           var oldSize = this.pdf.internal.getFontSize();
@@ -10905,6 +10909,13 @@ var jsPDF = function (global) {
 
         if (options.scale >= 0.01) {
           this.pdf.setFontSize(oldSize);
+        } // custom: restore clip state
+
+
+        this.pdf.internal.out('Q'); // custom:  ignoring second page if clip rect was extended and second part of split text line is redundant
+
+        if (this.pageWrapY < tmpRect.y + tmpRect.h && max - min === 1) {
+          break;
         }
       } // custom: restore initial page for multi-page case
 
