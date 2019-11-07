@@ -12028,6 +12028,10 @@ var jsPDF = function (global) {
       onRendered(canvas);
       this.prop.canvas = canvas;
       document.body.removeChild(this.prop.overlay);
+      var h = this.prop.container.offsetHeight;
+      var ctx = this.opt.jsPDF.context2d;
+      var firstPageSpace = ctx.pageWrapY - ctx.posY;
+      return h < firstPageSpace ? ctx.posY + h : (h - firstPageSpace) % ctx.pageWrapHeight + ctx.topOffset;
     });
   };
 
@@ -12051,9 +12055,10 @@ var jsPDF = function (global) {
     } //function checkCanvas() { return this.prop.canvas || this.toCanvas(); }
     ]; // Fulfill prereqs then create the image.
 
-    return this.thenList(prereqs).then(function toPdf_main() {
+    return this.thenList(prereqs).then(function toPdf_main(y) {
       // Create local copies of frequently used properties.
       this.prop.pdf = this.prop.pdf || this.opt.jsPDF;
+      return y;
     });
   };
   /* ----- OUTPUT / SAVE ----- */
@@ -12151,8 +12156,9 @@ var jsPDF = function (global) {
     } // Fulfill prereqs, update the filename (if provided), and save the PDF.
 
 
-    return this.thenList(prereqs).then(function doCallback_main() {
+    return this.thenList(prereqs).then(function doCallback_main(y) {
       this.prop.callback(this.prop.pdf);
+      return y;
     });
   };
   /* ----- SET / GET ----- */
