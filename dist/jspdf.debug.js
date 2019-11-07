@@ -1,36 +1,7 @@
 (function (factory) {
   typeof define === 'function' && define.amd ? define(factory) :
   factory();
-}(function () { 'use strict';
-
-  /** @license
-   * jsPDF - PDF Document creation from JavaScript
-   * Version 1.5.3 Built on 2019-11-07T09:02:32.726Z
-   *                      CommitID f54d3ae28f
-   *
-   * Copyright (c) 2010-2016 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
-   *               2010 Aaron Spike, https://github.com/acspike
-   *               2012 Willow Systems Corporation, willow-systems.com
-   *               2012 Pablo Hess, https://github.com/pablohess
-   *               2012 Florian Jenett, https://github.com/fjenett
-   *               2013 Warren Weckesser, https://github.com/warrenweckesser
-   *               2013 Youssef Beddad, https://github.com/lifof
-   *               2013 Lee Driscoll, https://github.com/lsdriscoll
-   *               2013 Stefan Slonevskiy, https://github.com/stefslon
-   *               2013 Jeremy Morel, https://github.com/jmorel
-   *               2013 Christoph Hartmann, https://github.com/chris-rock
-   *               2014 Juan Pablo Gaviria, https://github.com/juanpgaviria
-   *               2014 James Makes, https://github.com/dollaruw
-   *               2014 Diego Casorran, https://github.com/diegocr
-   *               2014 Steven Spungin, https://github.com/Flamenco
-   *               2014 Kenneth Glassey, https://github.com/Gavvers
-   *
-   * Licensed under the MIT License
-   *
-   * Contributor(s):
-   *    siefkenj, ahwolf, rickygu, Midnith, saintclair, eaparango,
-   *    kim3er, mfo, alnorth, Flamenco
-   */
+}((function () { 'use strict';
 
   function _typeof(obj) {
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
@@ -1975,6 +1946,7 @@
             if (typeof global.URL !== "undefined" && typeof global.URL.createObjectURL === "function") {
               return global.URL && global.URL.createObjectURL(getBlob(pdfDocument)) || void 0;
             } else {
+              f;
               console.warn('bloburl is not supported by your system, because URL.createObjectURL is not supported by your browser.');
             }
 
@@ -2437,12 +2409,6 @@
 
           case 'middle':
             y += height / 2 - descent;
-            break;
-
-          case 'ideographic':
-          case 'alphabetic':
-          default:
-            // do nothing, everything is fine
             break;
         } //multiline
 
@@ -6031,7 +5997,6 @@
     AcroFormRadioButton.prototype.setAppearance = function (appearance) {
       if (!('createAppearanceStream' in appearance && 'getCA' in appearance)) {
         throw new Error("Couldn't assign Appearance to RadioButton. Appearance was Invalid!");
-        return;
       }
 
       for (var objId in this.Kids) {
@@ -6741,7 +6706,7 @@
    *               2014 Diego Casorran, https://github.com/diegocr
    *               2014 James Robb, https://github.com/jamesbrobb
    *
-   * 
+   * Licensed under the MIT License
    */
 
   /**
@@ -11066,7 +11031,7 @@
       for (var i = 0; i < curves.length; i++) {
         var curve = curves[i];
 
-        if (i === 0) {
+        if ( i === 0) {
           doMove.call(this, curve.x1 + x, curve.y1 + y);
         }
         drawCurve.call(this, x, y, curve.x2, curve.y2, curve.x3, curve.y3, curve.x4, curve.y4);
@@ -12290,7 +12255,7 @@
             height: 0
           }
         }));
-        this.prop.container.style.float = 'none';
+        this.prop.container.style["float"] = 'none';
         this.prop.overlay.appendChild(this.prop.container);
         document.body.appendChild(this.prop.overlay);
         this.prop.container.firstChild.style.position = 'relative';
@@ -12704,7 +12669,7 @@
 
     Worker.prototype.using = Worker.prototype.set;
     Worker.prototype.saveAs = Worker.prototype.save;
-    Worker.prototype.export = Worker.prototype.output;
+    Worker.prototype["export"] = Worker.prototype.output;
     Worker.prototype.run = Worker.prototype.then; // Get dimensions of a PDF page, as determined by jsPDF.
 
     jsPDF.getPageSize = function (orientation, unit, format) {
@@ -12877,8 +12842,6 @@
         // Otherwise, return the worker for new Promise-based operation.
         return worker;
       }
-
-      return this;
     };
   })(jsPDF.API, typeof window !== "undefined" && window || typeof global !== "undefined" && global);
 
@@ -13257,7 +13220,7 @@
       }
 
       bytes = applyPngFilterMethod(bytes, lineLength, colorsPerPixel, filter_method);
-      var header = new Uint8Array(createZlibHeader(level));
+      var header = new Uint8Array(createZlibHeader());
       var checksum = adler32(bytes);
       var deflate = new Deflater(level);
       var a = deflate.append(bytes);
@@ -14273,12 +14236,6 @@
             kerning: options.kerning
           };
         } // then use default values
-
-
-        return {
-          widths: widths,
-          kerning: kerning
-        };
       }.call(this, options); // first we split on end-of-line chars
 
 
@@ -15598,7 +15555,7 @@
         };
       }
       strText = text;
-      key = activeFontKey;
+      key =  activeFontKey;
 
       if (Object.prototype.toString.call(text) === '[object Array]') {
         strText = text[0];
@@ -17841,24 +17798,21 @@
   }(typeof self !== "undefined" && self || typeof window !== "undefined" && window || undefined);
 
   // (c) Dean McNamee <dean@gmail.com>, 2013.
-  //
-  // https://github.com/deanm/omggif
-  //
-  // 
-  //
-  // omggif is a JavaScript implementation of a GIF 89a encoder and decoder,
-  // including animation and compression.  It does not rely on any specific
-  // underlying system, so should run in the browser, Node, or Plask.
+
   function GifWriter(buf, width, height, gopts) {
     var p = 0;
     var gopts = gopts === undefined ? {} : gopts;
     var loop_count = gopts.loop === undefined ? null : gopts.loop;
     var global_palette = gopts.palette === undefined ? null : gopts.palette;
-    if (width <= 0 || height <= 0 || width > 65535 || height > 65535) throw "Width/Height invalid.";
+    if (width <= 0 || height <= 0 || width > 65535 || height > 65535) throw new Error("Width/Height invalid.");
 
     function check_palette_and_num_colors(palette) {
       var num_colors = palette.length;
-      if (num_colors < 2 || num_colors > 256 || num_colors & num_colors - 1) throw "Invalid code/color length, must be power of 2 and 2 .. 256.";
+
+      if (num_colors < 2 || num_colors > 256 || num_colors & num_colors - 1) {
+        throw new Error("Invalid code/color length, must be power of 2 and 2 .. 256.");
+      }
+
       return num_colors;
     } // - Header.
 
@@ -17885,12 +17839,12 @@
 
       if (gopts.background !== undefined) {
         background = gopts.background;
-        if (background >= gp_num_colors) throw "Background index out of range."; // The GIF spec states that a background index of 0 should be ignored, so
+        if (background >= gp_num_colors) throw new Error("Background index out of range."); // The GIF spec states that a background index of 0 should be ignored, so
         // this is probably a mistake and you really want to set it to another
         // slot in the palette.  But actually in the end most browsers, etc end
         // up ignoring this almost completely (including for dispose background).
 
-        if (background === 0) throw "Background index explicitly passed as 0.";
+        if (background === 0) throw new Error("Background index explicitly passed as 0.");
       }
     } // - Logical Screen Descriptor.
     // NOTE(deanm): w/h apparently ignored by implementations, but set anyway.
@@ -17920,7 +17874,7 @@
 
     if (loop_count !== null) {
       // Netscape block for looping.
-      if (loop_count < 0 || loop_count > 65535) throw "Loop count invalid."; // Extension code, label, and length.
+      if (loop_count < 0 || loop_count > 65535) throw new Error("Loop count invalid."); // Extension code, label, and length.
 
       buf[p++] = 0x21;
       buf[p++] = 0xff;
@@ -17957,9 +17911,9 @@
       opts = opts === undefined ? {} : opts; // TODO(deanm): Bounds check x, y.  Do they need to be within the virtual
       // canvas width/height, I imagine?
 
-      if (x < 0 || y < 0 || x > 65535 || y > 65535) throw "x/y invalid.";
-      if (w <= 0 || h <= 0 || w > 65535 || h > 65535) throw "Width/Height invalid.";
-      if (indexed_pixels.length < w * h) throw "Not enough pixels for the frame size.";
+      if (x < 0 || y < 0 || x > 65535 || y > 65535) throw new Error("x/y invalid.");
+      if (w <= 0 || h <= 0 || w > 65535 || h > 65535) throw new Error("Width/Height invalid.");
+      if (indexed_pixels.length < w * h) throw new Error("Not enough pixels for the frame size.");
       var using_local_palette = true;
       var palette = opts.palette;
 
@@ -17968,7 +17922,7 @@
         palette = global_palette;
       }
 
-      if (palette === undefined || palette === null) throw "Must supply either a local or global palette.";
+      if (palette === undefined || palette === null) throw new Error("Must supply either a local or global palette.");
       var num_colors = check_palette_and_num_colors(palette); // Compute the min_code_size (power of 2), destroying num_colors.
 
       var min_code_size = 0;
@@ -17993,14 +17947,14 @@
 
       var disposal = opts.disposal === undefined ? 0 : opts.disposal;
       if (disposal < 0 || disposal > 3) // 4-7 is reserved.
-        throw "Disposal out of range.";
+        throw new Error("Disposal out of range.");
       var use_transparency = false;
       var transparent_index = 0;
 
       if (opts.transparent !== undefined && opts.transparent !== null) {
         use_transparency = true;
         transparent_index = opts.transparent;
-        if (transparent_index < 0 || transparent_index >= num_colors) throw "Transparent color index.";
+        if (transparent_index < 0 || transparent_index >= num_colors) throw new Error("Transparent color index.");
       }
 
       if (disposal !== 0 || use_transparency || delay !== 0) {
@@ -18045,6 +17999,7 @@
       }
 
       p = GifWriterOutputLZWCodeStream(buf, p, min_code_size < 2 ? 2 : min_code_size, indexed_pixels);
+      return p;
     };
 
     this.end = function () {
@@ -18055,6 +18010,22 @@
       }
 
       return p;
+    };
+
+    this.getOutputBuffer = function () {
+      return buf;
+    };
+
+    this.setOutputBuffer = function (v) {
+      buf = v;
+    };
+
+    this.getOutputBufferPosition = function () {
+      return p;
+    };
+
+    this.setOutputBufferPosition = function (v) {
+      p = v;
     };
   } // Main compression routine, palette indexes -> LZW code stream.
   // |index_stream| must have at least one entry.
@@ -18219,7 +18190,7 @@
     var p = 0; // - Header (GIF87a or GIF89a).
 
     if (buf[p++] !== 0x47 || buf[p++] !== 0x49 || buf[p++] !== 0x46 || buf[p++] !== 0x38 || (buf[p++] + 1 & 0xfd) !== 0x38 || buf[p++] !== 0x61) {
-      throw "Invalid GIF 87a/89a header.";
+      throw new Error("Invalid GIF 87a/89a header.");
     } // - Logical Screen Descriptor.
 
 
@@ -18234,9 +18205,11 @@
     buf[p++]; // Pixel aspect ratio (unused?).
 
     var global_palette_offset = null;
+    var global_palette_size = null;
 
     if (global_palette_flag) {
       global_palette_offset = p;
+      global_palette_size = num_global_colors;
       p += num_global_colors * 3; // Seek past palette.
     }
 
@@ -18271,8 +18244,11 @@
 
                 while (true) {
                   // Seek through subblocks.
-                  var block_size = buf[p++];
-                  if (block_size === 0) break;
+                  var block_size = buf[p++]; // Bad block size (ex: undefined from an out of bounds read).
+
+                  if (!(block_size >= 0)) throw Error("Invalid block size");
+                  if (block_size === 0) break; // 0 size is terminator
+
                   p += block_size;
                 }
               }
@@ -18281,7 +18257,7 @@
 
             case 0xf9:
               // Graphics Control Extension
-              if (buf[p++] !== 0x4 || buf[p + 4] !== 0) throw "Invalid graphics extension block.";
+              if (buf[p++] !== 0x4 || buf[p + 4] !== 0) throw new Error("Invalid graphics extension block.");
               var pf1 = buf[p++];
               delay = buf[p++] | buf[p++] << 8;
               transparent_index = buf[p++];
@@ -18295,8 +18271,11 @@
               // Comment Extension.
               while (true) {
                 // Seek through subblocks.
-                var block_size = buf[p++];
-                if (block_size === 0) break; // console.log(buf.slice(p, p+block_size).toString('ascii'));
+                var block_size = buf[p++]; // Bad block size (ex: undefined from an out of bounds read).
+
+                if (!(block_size >= 0)) throw Error("Invalid block size");
+                if (block_size === 0) break; // 0 size is terminator
+                // console.log(buf.slice(p, p+block_size).toString('ascii'));
 
                 p += block_size;
               }
@@ -18304,7 +18283,7 @@
               break;
 
             default:
-              throw "Unknown graphic control label: 0x" + buf[p - 1].toString(16);
+              throw new Error("Unknown graphic control label: 0x" + buf[p - 1].toString(16));
           }
 
           break;
@@ -18321,12 +18300,14 @@
           var num_local_colors_pow2 = pf2 & 0x7;
           var num_local_colors = 1 << num_local_colors_pow2 + 1;
           var palette_offset = global_palette_offset;
+          var palette_size = global_palette_size;
           var has_local_palette = false;
 
           if (local_palette_flag) {
             var has_local_palette = true;
             palette_offset = p; // Override with local palette.
 
+            palette_size = num_local_colors;
             p += num_local_colors * 3; // Seek past palette.
           }
 
@@ -18334,8 +18315,11 @@
           p++; // codesize
 
           while (true) {
-            var block_size = buf[p++];
-            if (block_size === 0) break;
+            var block_size = buf[p++]; // Bad block size (ex: undefined from an out of bounds read).
+
+            if (!(block_size >= 0)) throw Error("Invalid block size");
+            if (block_size === 0) break; // 0 size is terminator
+
             p += block_size;
           }
 
@@ -18346,6 +18330,7 @@
             height: h,
             has_local_palette: has_local_palette,
             palette_offset: palette_offset,
+            palette_size: palette_size,
             data_offset: data_offset,
             data_length: p - data_offset,
             transparent_index: transparent_index,
@@ -18361,8 +18346,7 @@
           break;
 
         default:
-          throw "Unknown gif block: 0x" + buf[p - 1].toString(16);
-          break;
+          throw new Error("Unknown gif block: 0x" + buf[p - 1].toString(16));
       }
     }
 
@@ -18375,7 +18359,7 @@
     };
 
     this.frameInfo = function (frame_num) {
-      if (frame_num < 0 || frame_num >= frames.length) throw "Frame index out of range.";
+      if (frame_num < 0 || frame_num >= frames.length) throw new Error("Frame index out of range.");
       return frames[frame_num];
     };
 
@@ -18406,7 +18390,7 @@
       // 7 rows for the first two passes, then 3 then 1.
 
       if (frame.interlaced === true) {
-        scanstride += (framewidth + framestride) * 4 * 7; // Pass 1.
+        scanstride += width * 4 * 7; // Pass 1.
       }
 
       var interlaceskip = 8; // Tracking the row interval in the current pass.
@@ -18421,7 +18405,7 @@
 
           if (op >= opend) {
             // Catch the wrap to switch passes when interlacing.
-            scanstride = framestride + (framewidth + framestride) * 4 * (interlaceskip - 1); // interlaceskip / 2 * 4 is interlaceskip << 1.
+            scanstride = framestride * 4 + width * 4 * (interlaceskip - 1); // interlaceskip / 2 * 4 is interlaceskip << 1.
 
             op = opbeg + (framewidth + framestride) * (interlaceskip << 1);
             interlaceskip >>= 1;
@@ -18472,7 +18456,7 @@
       // 7 rows for the first two passes, then 3 then 1.
 
       if (frame.interlaced === true) {
-        scanstride += (framewidth + framestride) * 4 * 7; // Pass 1.
+        scanstride += width * 4 * 7; // Pass 1.
       }
 
       var interlaceskip = 8; // Tracking the row interval in the current pass.
@@ -18487,7 +18471,7 @@
 
           if (op >= opend) {
             // Catch the wrap to switch passes when interlacing.
-            scanstride = framestride + (framewidth + framestride) * 4 * (interlaceskip - 1); // interlaceskip / 2 * 4 is interlaceskip << 1.
+            scanstride = framestride * 4 + width * 4 * (interlaceskip - 1); // interlaceskip / 2 * 4 is interlaceskip << 1.
 
             op = opbeg + (framewidth + framestride) * (interlaceskip << 1);
             interlaceskip >>= 1;
@@ -18645,12 +18629,13 @@
     }
 
     return output;
-  }
+  } // CommonJS.
+
 
   try {
     exports.GifWriter = GifWriter;
     exports.GifReader = GifReader;
-  } catch (e) {} // CommonJS.
+  } catch (e) {}
 
   /*
    * Copyright (c) 2012 chick307 <chick307@gmail.com>
@@ -19430,45 +19415,6 @@
 
     jsPDF.API.events.push(['postProcessText', bidiEngineFunction]);
   })(jsPDF);
-
-  /*
-    Copyright (c) 2008, Adobe Systems Incorporated
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without 
-    modification, are permitted provided that the following conditions are
-    met:
-
-    * Redistributions of source code must retain the above copyright notice, 
-      this list of conditions and the following disclaimer.
-    
-    * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the 
-      documentation and/or other materials provided with the distribution.
-    
-    * Neither the name of Adobe Systems Incorporated nor the names of its 
-      contributors may be used to endorse or promote products derived from 
-      this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
-    IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-    THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR 
-    CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-    EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-    PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-    PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-  */
-
-  /**
-   * @author shaozilee
-   *
-   * Bmp format decoder,support 1bit 4bit 8bit 24bit bmp
-   *
-   */
 
   /*
    Copyright (c) 2013 Gildas Lormeau. All rights reserved.
@@ -21186,8 +21132,6 @@
             case SLOW:
               bstate = deflate_slow(flush);
               break;
-
-            default:
           }
 
           if (bstate == FinishStarted || bstate == FinishDone) {
@@ -21958,8 +21902,8 @@
         return this.data[this.pos++];
       };
 
-      Data.prototype.writeByte = function (byte) {
-        return this.data[this.pos++] = byte;
+      Data.prototype.writeByte = function (_byte) {
+        return this.data[this.pos++] = _byte;
       };
 
       Data.prototype.readUInt32 = function () {
@@ -21979,13 +21923,14 @@
       };
 
       Data.prototype.readInt32 = function () {
-        var int;
-        int = this.readUInt32();
+        var _int;
 
-        if (int >= 0x80000000) {
-          return int - 0x100000000;
+        _int = this.readUInt32();
+
+        if (_int >= 0x80000000) {
+          return _int - 0x100000000;
         } else {
-          return int;
+          return _int;
         }
       };
 
@@ -22010,13 +21955,14 @@
       };
 
       Data.prototype.readInt16 = function () {
-        var int;
-        int = this.readUInt16();
+        var _int2;
 
-        if (int >= 0x8000) {
-          return int - 0x10000;
+        _int2 = this.readUInt16();
+
+        if (_int2 >= 0x8000) {
+          return _int2 - 0x10000;
         } else {
-          return int;
+          return _int2;
         }
       };
 
@@ -22122,14 +22068,14 @@
       };
 
       Data.prototype.write = function (bytes) {
-        var byte, _i, _len, _results;
+        var _byte2, _i, _len, _results;
 
         _results = [];
 
         for (_i = 0, _len = bytes.length; _i < _len; _i++) {
-          byte = bytes[_i];
+          _byte2 = bytes[_i];
 
-          _results.push(this.writeByte(byte));
+          _results.push(this.writeByte(_byte2));
         }
 
         return _results;
@@ -22916,7 +22862,6 @@
             }
 
             return _results;
-            break;
 
           case 0x00025000:
             numberOfGlyphs = data.readUInt16();
@@ -24776,7 +24721,7 @@
     return constructor;
   }();
 
-}));
+})));
 
 try {
 module.exports = jsPDF;

@@ -1,34 +1,5 @@
 'use strict';
 
-/** @license
- * jsPDF - PDF Document creation from JavaScript
- * Version 1.5.3 Built on 2019-11-07T09:02:39.133Z
- *                      CommitID f54d3ae28f
- *
- * Copyright (c) 2010-2016 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
- *               2010 Aaron Spike, https://github.com/acspike
- *               2012 Willow Systems Corporation, willow-systems.com
- *               2012 Pablo Hess, https://github.com/pablohess
- *               2012 Florian Jenett, https://github.com/fjenett
- *               2013 Warren Weckesser, https://github.com/warrenweckesser
- *               2013 Youssef Beddad, https://github.com/lifof
- *               2013 Lee Driscoll, https://github.com/lsdriscoll
- *               2013 Stefan Slonevskiy, https://github.com/stefslon
- *               2013 Jeremy Morel, https://github.com/jmorel
- *               2013 Christoph Hartmann, https://github.com/chris-rock
- *               2014 Juan Pablo Gaviria, https://github.com/juanpgaviria
- *               2014 James Makes, https://github.com/dollaruw
- *               2014 Diego Casorran, https://github.com/diegocr
- *               2014 Steven Spungin, https://github.com/Flamenco
- *               2014 Kenneth Glassey, https://github.com/Gavvers
- *
- * Licensed under the MIT License
- *
- * Contributor(s):
- *    siefkenj, ahwolf, rickygu, Midnith, saintclair, eaparango,
- *    kim3er, mfo, alnorth, Flamenco
- */
-
 function _typeof(obj) {
   if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
     _typeof = function (obj) {
@@ -1661,6 +1632,7 @@ var jsPDF = function (global) {
           if (typeof global.URL !== "undefined" && typeof global.URL.createObjectURL === "function") {
             return global.URL && global.URL.createObjectURL(getBlob(pdfDocument)) || void 0;
           } else {
+            f;
             console.warn('bloburl is not supported by your system, because URL.createObjectURL is not supported by your browser.');
           }
 
@@ -2123,12 +2095,6 @@ var jsPDF = function (global) {
 
         case 'middle':
           y += height / 2 - descent;
-          break;
-
-        case 'ideographic':
-        case 'alphabetic':
-        default:
-          // do nothing, everything is fine
           break;
       } //multiline
 
@@ -5717,7 +5683,6 @@ var jsPDF = function (global) {
   AcroFormRadioButton.prototype.setAppearance = function (appearance) {
     if (!('createAppearanceStream' in appearance && 'getCA' in appearance)) {
       throw new Error("Couldn't assign Appearance to RadioButton. Appearance was Invalid!");
-      return;
     }
 
     for (var objId in this.Kids) {
@@ -6427,7 +6392,7 @@ var jsPDF = function (global) {
  *               2014 Diego Casorran, https://github.com/diegocr
  *               2014 James Robb, https://github.com/jamesbrobb
  *
- * 
+ * Licensed under the MIT License
  */
 
 /**
@@ -10752,7 +10717,7 @@ var jsPDF = function (global) {
     for (var i = 0; i < curves.length; i++) {
       var curve = curves[i];
 
-      if (i === 0) {
+      if ( i === 0) {
         doMove.call(this, curve.x1 + x, curve.y1 + y);
       }
       drawCurve.call(this, x, y, curve.x2, curve.y2, curve.x3, curve.y3, curve.x4, curve.y4);
@@ -11976,7 +11941,7 @@ var jsPDF = function (global) {
           height: 0
         }
       }));
-      this.prop.container.style.float = 'none';
+      this.prop.container.style["float"] = 'none';
       this.prop.overlay.appendChild(this.prop.container);
       document.body.appendChild(this.prop.overlay);
       this.prop.container.firstChild.style.position = 'relative';
@@ -12390,7 +12355,7 @@ var jsPDF = function (global) {
 
   Worker.prototype.using = Worker.prototype.set;
   Worker.prototype.saveAs = Worker.prototype.save;
-  Worker.prototype.export = Worker.prototype.output;
+  Worker.prototype["export"] = Worker.prototype.output;
   Worker.prototype.run = Worker.prototype.then; // Get dimensions of a PDF page, as determined by jsPDF.
 
   jsPDF.getPageSize = function (orientation, unit, format) {
@@ -12563,8 +12528,6 @@ var jsPDF = function (global) {
       // Otherwise, return the worker for new Promise-based operation.
       return worker;
     }
-
-    return this;
   };
 })(jsPDF.API, typeof window !== "undefined" && window || typeof global !== "undefined" && global);
 
@@ -12943,7 +12906,7 @@ var jsPDF = function (global) {
     }
 
     bytes = applyPngFilterMethod(bytes, lineLength, colorsPerPixel, filter_method);
-    var header = new Uint8Array(createZlibHeader(level));
+    var header = new Uint8Array(createZlibHeader());
     var checksum = adler32(bytes);
     var deflate = new Deflater(level);
     var a = deflate.append(bytes);
@@ -13959,12 +13922,6 @@ var jsPDF = function (global) {
           kerning: options.kerning
         };
       } // then use default values
-
-
-      return {
-        widths: widths,
-        kerning: kerning
-      };
     }.call(this, options); // first we split on end-of-line chars
 
 
@@ -15284,7 +15241,7 @@ var jsPDF = function (global) {
       };
     }
     strText = text;
-    key = activeFontKey;
+    key =  activeFontKey;
 
     if (Object.prototype.toString.call(text) === '[object Array]') {
       strText = text[0];
@@ -16252,45 +16209,6 @@ var jsPDF = function (global) {
 
   jsPDF.API.events.push(['postProcessText', bidiEngineFunction]);
 })(jsPDF);
-
-/*
-  Copyright (c) 2008, Adobe Systems Incorporated
-  All rights reserved.
-
-  Redistribution and use in source and binary forms, with or without 
-  modification, are permitted provided that the following conditions are
-  met:
-
-  * Redistributions of source code must retain the above copyright notice, 
-    this list of conditions and the following disclaimer.
-  
-  * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the 
-    documentation and/or other materials provided with the distribution.
-  
-  * Neither the name of Adobe Systems Incorporated nor the names of its 
-    contributors may be used to endorse or promote products derived from 
-    this software without specific prior written permission.
-
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
-  IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR 
-  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
-/**
- * @author shaozilee
- *
- * Bmp format decoder,support 1bit 4bit 8bit 24bit bmp
- *
- */
 
 /*
  Copyright (c) 2013 Gildas Lormeau. All rights reserved.
@@ -18008,8 +17926,6 @@ var jsPDF = function (global) {
           case SLOW:
             bstate = deflate_slow(flush);
             break;
-
-          default:
         }
 
         if (bstate == FinishStarted || bstate == FinishDone) {
@@ -18780,8 +18696,8 @@ var jsPDF = function (global) {
       return this.data[this.pos++];
     };
 
-    Data.prototype.writeByte = function (byte) {
-      return this.data[this.pos++] = byte;
+    Data.prototype.writeByte = function (_byte) {
+      return this.data[this.pos++] = _byte;
     };
 
     Data.prototype.readUInt32 = function () {
@@ -18801,13 +18717,14 @@ var jsPDF = function (global) {
     };
 
     Data.prototype.readInt32 = function () {
-      var int;
-      int = this.readUInt32();
+      var _int;
 
-      if (int >= 0x80000000) {
-        return int - 0x100000000;
+      _int = this.readUInt32();
+
+      if (_int >= 0x80000000) {
+        return _int - 0x100000000;
       } else {
-        return int;
+        return _int;
       }
     };
 
@@ -18832,13 +18749,14 @@ var jsPDF = function (global) {
     };
 
     Data.prototype.readInt16 = function () {
-      var int;
-      int = this.readUInt16();
+      var _int2;
 
-      if (int >= 0x8000) {
-        return int - 0x10000;
+      _int2 = this.readUInt16();
+
+      if (_int2 >= 0x8000) {
+        return _int2 - 0x10000;
       } else {
-        return int;
+        return _int2;
       }
     };
 
@@ -18944,14 +18862,14 @@ var jsPDF = function (global) {
     };
 
     Data.prototype.write = function (bytes) {
-      var byte, _i, _len, _results;
+      var _byte2, _i, _len, _results;
 
       _results = [];
 
       for (_i = 0, _len = bytes.length; _i < _len; _i++) {
-        byte = bytes[_i];
+        _byte2 = bytes[_i];
 
-        _results.push(this.writeByte(byte));
+        _results.push(this.writeByte(_byte2));
       }
 
       return _results;
@@ -19738,7 +19656,6 @@ var jsPDF = function (global) {
           }
 
           return _results;
-          break;
 
         case 0x00025000:
           numberOfGlyphs = data.readUInt16();

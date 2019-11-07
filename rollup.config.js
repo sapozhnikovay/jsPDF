@@ -36,7 +36,7 @@ function rawjs(opts) {
         ';/*rollup-keeper-end*/'
       return code + keepStr
     },
-    transformBundle: (code) => {
+    renderChunk: (code) => {
       for (var file in opts) {
         var r = new RegExp(opts[file] + '\\$\\d+', 'g')
         code = code.replace(r, opts[file])
