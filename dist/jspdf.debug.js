@@ -10684,13 +10684,7 @@
       var lineCap = this.lineCap;
       var lineWidth = this.lineWidth;
       var lineJoin = this.lineJoin;
-      this.pdf.addPage();
-      this.fillStyle = fillStyle;
-      this.strokeStyle = strokeStyle;
-      this.font = font;
-      this.lineCap = lineCap;
-      this.lineWidth = lineWidth;
-      this.lineJoin = lineJoin; // custom: didDrawPage callback
+      this.pdf.addPage(); // custom: didDrawPage callback
 
       if (this.didDrawPage) {
         var oldSize = this.pdf.internal.getFontSize();
@@ -10699,6 +10693,13 @@
         this.pdf.setFontSize(oldSize);
         this.pdf.setTextColor(oldColor);
       }
+
+      this.fillStyle = fillStyle;
+      this.strokeStyle = strokeStyle;
+      this.font = font;
+      this.lineCap = lineCap;
+      this.lineWidth = lineWidth;
+      this.lineJoin = lineJoin;
     };
 
     var pathPositionRedo = function pathPositionRedo(paths, x, y) {
@@ -10734,8 +10735,8 @@
       var origPath = JSON.parse(JSON.stringify(this.path)); // custom: avoid adding extra pages for non-autoPaging mode as leads to incorrect initial page number (latest added)
 
       if (this.autoPaging) {
-        var xPath = JSON.parse(JSON.stringify(this.path));
-        var clipPath;
+        var xPath = JSON.parse(JSON.stringify(this.path)); // var clipPath;
+
         var tmpPath;
         var pages = [];
 
@@ -10776,15 +10777,16 @@
           this.strokeStyle = strokeStyle;
           this.lineCap = lineCap;
           this.lineWidth = lineWidth;
-          this.lineJoin = lineJoin;
-
-          if (this.ctx.clip_path.length !== 0) {
-            var tmpPaths = this.path;
-            clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
-            this.path = pathPositionRedo(clipPath, this.posX, yOffset);
-            drawPaths.call(this, rule, true);
-            this.path = tmpPaths;
-          }
+          this.lineJoin = lineJoin; // custom: there unclear is oddity when during rendering html only box is displayed at new page (w/o text)
+          // - then the rest page content is "invisible"; looks like clip_path/q/Q issue, not clarified,
+          // but commenting this block helps...
+          // if (this.ctx.clip_path.length !== 0) {
+          //     var tmpPaths = this.path;
+          //     clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
+          //     this.path = pathPositionRedo(clipPath, this.posX, yOffset);
+          //     drawPaths.call(this, rule, true);
+          //     this.path = tmpPaths;
+          // }
 
           tmpPath = JSON.parse(JSON.stringify(origPath));
           this.path = pathPositionRedo(tmpPath, this.posX, yOffset);
