@@ -10268,7 +10268,9 @@ var jsPDF = function (global) {
         }
       }
 
-      pages.sort(); // var clipPath;
+      pages.sort(function (a, b) {
+        return a - b;
+      }); // var clipPath;
 
       var min = pages[0];
       var max = pages[pages.length - 1];
@@ -10361,6 +10363,53 @@ var jsPDF = function (global) {
     }
 
     return result;
+  }; // custom: based on getPagesByPath()
+
+
+  var getPathMaxY = function getPathMaxY(complexPath, pageWrapY) {
+    var result = [];
+
+    for (var i = 0; i < complexPath.length; ++i) {
+      var path = complexPath[i];
+
+      switch (path.type) {
+        case 'mt':
+        case 'lt':
+          result.push(path.y);
+          break;
+
+        case 'arc':
+          result.push(path.y - path.radius);
+          result.push(path.y + path.radius);
+          break;
+
+        case 'qct':
+          var rectOfQuadraticCurve = getQuadraticCurveBoundary(this.ctx.lastPoint.x, this.ctx.lastPoint.y, path.x1, path.y1, path.x, path.y);
+          result.push(rectOfQuadraticCurve.y);
+          result.push(rectOfQuadraticCurve.y + rectOfQuadraticCurve.h);
+          break;
+
+        case 'bct':
+          var rectOfBezierCurve = getBezierCurveBoundary(this.ctx.lastPoint.x, this.ctx.lastPoint.y, path.x1, path.y1, path.x2, path.y2, path.x, path.y);
+          result.push(rectOfBezierCurve.y);
+          result.push(rectOfBezierCurve.y + rectOfBezierCurve.h);
+          break;
+
+        case 'rect':
+          result.push(path.y);
+          result.push(path.y + path.h);
+          break;
+
+        default:
+          if (path.y) {
+            result.push(path.y);
+          }
+
+          break;
+      }
+    }
+
+    return Math.max.apply(Math, result);
   };
 
   var addPage = function addPage() {
@@ -10450,7 +10499,9 @@ var jsPDF = function (global) {
         }
       }
 
-      pages.sort();
+      pages.sort(function (a, b) {
+        return a - b;
+      });
       var min = pages[0];
       var max = pages[pages.length - 1];
       var pageWrapY = this.pageWrapY || this.pdf.internal.pageSize.height;
@@ -10479,11 +10530,18 @@ var jsPDF = function (global) {
 
         if (isClip === false || i === 0) {
           drawPaths.call(this, rule, isClip);
-        } // custom: restore initial page for multi-page case
+        } // custom: workaround to avoid duplicates of html lines of text background boxes on next page
 
 
-        this.pdf.setPage(startPage);
-      }
+        var pathMaxY = getPathMaxY.call(this, this.path, pageWrapY);
+
+        if (pathMaxY - pageWrapY > 0 && pathMaxY < this.pdf.internal.pageSize.height) {
+          break;
+        }
+      } // custom: restore initial page for multi-page case
+
+
+      this.pdf.setPage(startPage);
     } else {
       drawPaths.call(this, rule, isClip);
     }
@@ -10797,7 +10855,9 @@ var jsPDF = function (global) {
       pages = pages.map(function (pageNum) {
         return pageNum + startPage - 1;
       });
-      pages.sort(); // var clipPath;
+      pages.sort(function (a, b) {
+        return a - b;
+      }); // var clipPath;
 
       var min = pages[0];
       var max = pages[pages.length - 1];
