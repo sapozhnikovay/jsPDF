@@ -10823,7 +10823,16 @@
         for (var i = min; i < max + 1; i++) {
           this.pdf.setPage(i); // custom: pageWrapY & topOffset based offset calculation
 
-          var yOffset = i === startPage ? this.posY : this.posY - (i - startPage) * pageWrapY + this.topOffset;
+          var yOffset;
+
+          if (i - startPage === 0) {
+            yOffset = this.posY;
+          } else if (i - startPage === 1) {
+            yOffset = this.posY - this.pageWrapY + this.topOffset;
+          } else if (i - startPage > 1) {
+            yOffset = this.posY - this.pageWrapY - this.pageWrapHeight * (i - startPage - 1) + this.topOffset;
+          }
+
           this.fillStyle = fillStyle;
           this.strokeStyle = strokeStyle;
           this.lineCap = lineCap;
