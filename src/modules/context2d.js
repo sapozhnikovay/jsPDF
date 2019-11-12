@@ -1983,6 +1983,10 @@
                 this.pdf.link(tmpRect.x, tmpRect.y - tmpRect.h, tmpRect.w, tmpRect.h, {
                   url: this.linkMeta.href
                 });
+
+                if (this.didAddLink) {
+                  this.didAddLink(i, tmpRect.x, tmpRect.y - tmpRect.h, tmpRect.w, tmpRect.h, this.linkMeta.href);
+                }
               }
             }
 

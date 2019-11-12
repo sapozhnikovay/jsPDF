@@ -318,6 +318,7 @@
 
 		// custom: new callbacks and params
 		pdf.context2d.didDrawPage = this.opt.didDrawPage;
+		pdf.context2d.didAddLink = this.opt.didAddLink;
 		pdf.context2d.topOffset = this.opt.topOffset || 0;
 		pdf.context2d.bottomOffset = this.opt.bottomOffset || 0;
 		pdf.context2d.pageWrapY = pdf.internal.pageSize.height - pdf.context2d.bottomOffset;
