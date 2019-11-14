@@ -9773,6 +9773,8 @@ var jsPDF = function (global) {
     this.fillStyle = '#ffffff';
     this.fillRect(x, y, w, h);
   };
+
+  var lastContextSavedPage = 0;
   /**
   * Saves the state of the current context
   * 
@@ -9780,12 +9782,12 @@ var jsPDF = function (global) {
   * @function
   */
 
-
   Context2D.prototype.save = function (doStackPush) {
     doStackPush = typeof doStackPush === 'boolean' ? doStackPush : true;
     var tmpPageNumber = this.pdf.internal.getCurrentPageInfo().pageNumber;
+    lastContextSavedPage = this.pdf.internal.getNumberOfPages();
 
-    for (var i = 0; i < this.pdf.internal.getNumberOfPages(); i++) {
+    for (var i = 0; i < lastContextSavedPage; i++) {
       this.pdf.setPage(i + 1);
       this.pdf.internal.out('q');
     }
@@ -9811,7 +9813,7 @@ var jsPDF = function (global) {
     doStackPop = typeof doStackPop === 'boolean' ? doStackPop : true;
     var tmpPageNumber = this.pdf.internal.getCurrentPageInfo().pageNumber;
 
-    for (var i = 0; i < this.pdf.internal.getNumberOfPages(); i++) {
+    for (var i = 0; i < Math.min(lastContextSavedPage, this.pdf.internal.getNumberOfPages()); i++) {
       this.pdf.setPage(i + 1);
       this.pdf.internal.out('Q');
     }
