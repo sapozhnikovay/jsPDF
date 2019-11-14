@@ -10584,7 +10584,6 @@
 
         for (var j = 0; j < pages.length; j++) {
           while (this.pdf.internal.getNumberOfPages() < pages[j]) {
-            console.debug('Context2D::drawImage - adding page', pages[j]);
             addPage.call(this);
           }
         }
@@ -11196,7 +11195,6 @@
         for (var i = min; i < max + 1; i++) {
           // custom: adding missing pages
           while (this.pdf.internal.getNumberOfPages() < i) {
-            console.debug('Context2D::putText - adding page', i);
             addPage.call(this);
           }
 
