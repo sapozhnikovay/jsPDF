@@ -343,7 +343,7 @@
 		this.prop.canvas = canvas;
 		document.body.removeChild(this.prop.overlay);
 
-		var h = this.prop.container.offsetHeight
+		var h = this.prop.container.offsetHeight;
 		var ctx = this.opt.jsPDF.context2d;
 		var firstPageSpace = ctx.pageWrapY - ctx.posY;
 		return h < firstPageSpace ? ctx.posY + h : (h - firstPageSpace) % ctx.pageWrapHeight + ctx.topOffset;

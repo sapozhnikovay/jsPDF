@@ -9254,6 +9254,17 @@
       getHorizontalCoordinate = this.internal.getHorizontalCoordinate;
       getVerticalCoordinate = this.internal.getVerticalCoordinate;
     }]);
+    jsPDFAPI.events.push(['resetContext2D', function () {
+      this.context2d.ctx = new ContextLayer();
+      this.context2d.ctxStack = [];
+      this.context2d.pageWrapXEnabled = false;
+      this.context2d.pageWrapYEnabled = false;
+      this.context2d.posX = 0;
+      this.context2d.posY = 0;
+      this.context2d.autoPaging = false;
+      this.context2d.lastBreak = 0;
+      this.context2d.pageBreaks = [];
+    }]);
 
     var Context2D = function Context2D(pdf) {
       Object.defineProperty(this, 'canvas', {
@@ -9698,6 +9709,7 @@
           this.ctx.ignoreClearRect = Boolean(value);
         }
       });
+      this.lastContextSavedPage = 0;
     };
 
     Context2D.prototype.fill = function () {
@@ -10087,8 +10099,6 @@
       this.fillStyle = '#ffffff';
       this.fillRect(x, y, w, h);
     };
-
-    var lastContextSavedPage = 0;
     /**
     * Saves the state of the current context
     * 
@@ -10096,9 +10106,11 @@
     * @function
     */
 
+
     Context2D.prototype.save = function (doStackPush) {
       doStackPush = typeof doStackPush === 'boolean' ? doStackPush : true;
       this.pdf.internal.out('q');
+      this.lastContextSavedPage = this.pdf.internal.getCurrentPageInfo().pageNumber;
 
       if (doStackPush) {
         this.ctx.fontSize = this.pdf.internal.getFontSize();
@@ -10119,13 +10131,13 @@
       doStackPop = typeof doStackPop === 'boolean' ? doStackPop : true;
       var tmpPageNumber = this.pdf.internal.getCurrentPageInfo().pageNumber;
 
-      if (lastContextSavedPage && lastContextSavedPage <= this.pdf.internal.getNumberOfPages()) {
-        this.pdf.setPage(lastContextSavedPage);
+      if (this.lastContextSavedPage && this.lastContextSavedPage <= this.pdf.internal.getNumberOfPages()) {
+        this.pdf.setPage(this.lastContextSavedPage);
         this.pdf.internal.out('Q');
         this.pdf.setPage(tmpPageNumber);
       }
 
-      lastContextSavedPage = 0;
+      this.lastContextSavedPage = 0;
 
       if (doStackPop && this.ctxStack.length !== 0) {
         this.ctx = this.ctxStack.pop();
