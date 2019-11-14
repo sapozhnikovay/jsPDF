@@ -870,14 +870,8 @@
     */
     Context2D.prototype.save = function (doStackPush) {
         doStackPush = typeof doStackPush === 'boolean' ? doStackPush : true;
-        var tmpPageNumber = this.pdf.internal.getCurrentPageInfo().pageNumber;
 
-        lastContextSavedPage = this.pdf.internal.getNumberOfPages();
-        for (var i = 0; i < lastContextSavedPage; i++) {
-            this.pdf.setPage(i+1);
-            this.pdf.internal.out('q');
-        }
-        this.pdf.setPage(tmpPageNumber);
+        this.pdf.internal.out('q');
 
         if (doStackPush) {
             this.ctx.fontSize = this.pdf.internal.getFontSize();
@@ -895,12 +889,14 @@
     */
     Context2D.prototype.restore = function (doStackPop) {
         doStackPop = typeof doStackPop === 'boolean' ? doStackPop : true;
+
         var tmpPageNumber = this.pdf.internal.getCurrentPageInfo().pageNumber;
-        for (var i = 0; i < Math.min(lastContextSavedPage, this.pdf.internal.getNumberOfPages()); i++) {
-            this.pdf.setPage(i+1);
+        if (lastContextSavedPage && lastContextSavedPage <= this.pdf.internal.getNumberOfPages()) {
+            this.pdf.setPage(lastContextSavedPage);
             this.pdf.internal.out('Q');
+            this.pdf.setPage(tmpPageNumber);
         }
-        this.pdf.setPage(tmpPageNumber);
+        lastContextSavedPage = 0;
 
         if (doStackPop && this.ctxStack.length !== 0) {
             this.ctx = this.ctxStack.pop();
