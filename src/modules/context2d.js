@@ -1339,6 +1339,9 @@
 
         // custom: avoid adding extra pages for non-autoPaging mode as leads to incorrect initial page number (latest added)
         if (this.autoPaging) {
+          // custom: determine current page number before adding pages, required to fit the path
+          var startPage = this.pdf.internal.getCurrentPageInfo().pageNumber;
+
           var pageArray = getPagesByPath.call(this, xRect);
           var pages = [];
 
@@ -1349,7 +1352,6 @@
           }
 
           // custom: working with arbitrary start page fix
-          var startPage = this.pdf.internal.getCurrentPageInfo().pageNumber;
           pages = pages.map(function (pageNum) {
               return pageNum + startPage - 1;
           });
@@ -1558,6 +1560,9 @@
           var tmpPath;
           var pages = [];
 
+          // custom: determine current page number before adding pages, required to fit the path
+          var startPage = this.pdf.internal.getCurrentPageInfo().pageNumber;
+
           for (var i = 0; i < xPath.length; i++) {
             if (typeof xPath[i].x !== "undefined") {
               var page = getPagesByPath.call(this, xPath[i]);
@@ -1571,7 +1576,6 @@
           }
 
           // custom: working with arbitrary start page fix
-          var startPage = this.pdf.internal.getCurrentPageInfo().pageNumber;
           pages = pages.map(function (pageNum) {
             return pageNum + startPage - 1;
           });
@@ -1915,6 +1919,9 @@
 
         // custom: avoid adding extra pages for non-autoPaging mode as leads to incorrect initial page number (latest added)
         if (this.autoPaging) {
+          // custom: determine current page number before adding pages, required to fit the path
+          var startPage = this.pdf.internal.getCurrentPageInfo().pageNumber;
+
           var pageArray = getPagesByPath.call(this, textXRect);
           var pages = [];
 
@@ -1925,7 +1932,6 @@
           }
 
           // custom: working with arbitrary start page fix
-          var startPage = this.pdf.internal.getCurrentPageInfo().pageNumber;
           pages = pages.map(function (pageNum) {
             return pageNum + startPage - 1;
           });
